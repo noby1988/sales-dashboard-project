@@ -3,44 +3,42 @@ import { JwtService } from '@nestjs/jwt';
 
 export interface User {
   id: string;
-  email: string;
-  name: string;
-  provider: string;
-  avatar?: string;
+  username: string;
+  email?: string;
+  name?: string;
 }
 
 @Injectable()
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  async validateOAuthUser(profile: any, provider: string): Promise<User> {
-    // In a real application, you would save/update user in database here
-    const user: User = {
-      id: profile.id || profile.sub,
-      email: profile.email,
-      name: profile.name || profile.displayName,
-      provider,
-      avatar: profile.picture || profile.avatar_url,
-    };
-
-    return user;
+  async validateUser(username: string, password: string): Promise<User | null> {
+    // In a real application, you would validate against database
+    if (username === 'admin' && password === 'password') {
+      return {
+        id: '1',
+        username: 'admin',
+        email: 'admin@example.com',
+        name: 'Administrator',
+      };
+    }
+    return null;
   }
 
   async login(user: User) {
     const payload = {
       sub: user.id,
+      username: user.username,
       email: user.email,
-      provider: user.provider,
     };
 
     return {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
+        username: user.username,
         email: user.email,
         name: user.name,
-        provider: user.provider,
-        avatar: user.avatar,
       },
     };
   }
@@ -48,7 +46,7 @@ export class AuthService {
   async verifyToken(token: string) {
     try {
       return this.jwtService.verify(token);
-    } catch (error) {
+    } catch {
       return null;
     }
   }
