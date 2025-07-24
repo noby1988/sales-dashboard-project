@@ -106,9 +106,7 @@ export class SalesDataComponent implements OnInit, OnDestroy {
   private hasMoreRecords = false;
   private scrollTriggered = false;
   private scrollContainer: HTMLElement | null = null;
-  private previousScrollHeight = 0;
   private scrollTimeout: any = null;
-  private lastScrollTime = 0;
 
   // Make Math available in template
   protected Math = Math;
@@ -120,7 +118,6 @@ export class SalesDataComponent implements OnInit, OnDestroy {
 
   // Improved infinite scrolling with debouncing and state management
   onScroll(event: any) {
-    const now = Date.now();
     const element = event.target;
 
     // Debounce scroll events to prevent excessive calls
@@ -128,25 +125,21 @@ export class SalesDataComponent implements OnInit, OnDestroy {
       clearTimeout(this.scrollTimeout);
     }
 
-    // Only process scroll events that are at least 100ms apart
-    if (now - this.lastScrollTime < 100) {
-      this.scrollTimeout = setTimeout(() => {
-        this.processScroll(element);
-      }, 100);
-      return;
-    }
-
-    this.lastScrollTime = now;
-    this.processScroll(element);
+    // Process scroll with a small delay to ensure smooth scrolling
+    this.scrollTimeout = setTimeout(() => {
+      this.processScroll(element);
+    }, 50);
   }
 
   private processScroll(element: HTMLElement) {
     this.scrollContainer = element;
 
-    // Check if we're near the bottom (100px threshold for better performance)
-    const atBottom =
-      element.scrollHeight - element.scrollTop <= element.clientHeight + 100;
+    // More precise bottom detection - check if we're within 50px of the bottom
+    const scrollPosition = element.scrollTop + element.clientHeight;
+    const scrollHeight = element.scrollHeight;
+    const atBottom = scrollHeight - scrollPosition <= 50;
 
+    // Only trigger if we're at the bottom, not already loading, have more records, and haven't triggered recently
     if (
       atBottom &&
       !this.scrollTriggered &&
@@ -154,13 +147,12 @@ export class SalesDataComponent implements OnInit, OnDestroy {
       this.hasMoreRecords
     ) {
       this.scrollTriggered = true;
-      this.previousScrollHeight = element.scrollHeight;
       this.loadMoreRecords();
 
-      // Reset the flag after a longer delay to prevent multiple triggers
+      // Reset the flag after loading completes or timeout
       setTimeout(() => {
         this.scrollTriggered = false;
-      }, 1000);
+      }, 1500);
     }
   }
 
@@ -196,17 +188,9 @@ export class SalesDataComponent implements OnInit, OnDestroy {
     // Subscribe to loading and hasMore states for infinite scroll
     this.isLoadingMore$.pipe(takeUntil(this.destroy$)).subscribe((loading) => {
       this.isLoadingMore = loading;
-      // If loading finished and we have a scroll container, preserve scroll position
-      if (!loading && this.scrollContainer && this.previousScrollHeight > 0) {
-        // Use requestAnimationFrame for better performance
-        requestAnimationFrame(() => {
-          if (this.scrollContainer) {
-            const newScrollHeight = this.scrollContainer.scrollHeight;
-            const scrollDiff = newScrollHeight - this.previousScrollHeight;
-            this.scrollContainer.scrollTop += scrollDiff;
-            this.previousScrollHeight = 0;
-          }
-        });
+      // Reset scroll trigger when loading completes
+      if (!loading) {
+        this.scrollTriggered = false;
       }
     });
     this.hasMoreRecords$
