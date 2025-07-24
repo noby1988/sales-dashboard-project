@@ -53,8 +53,7 @@ export class HomeComponent implements OnInit {
   }
 
   viewAnalytics() {
-    // TODO: Navigate to analytics page
-    console.log('Navigate to analytics page');
+    this.router.navigate(['/analytics']);
   }
 
   exportData() {

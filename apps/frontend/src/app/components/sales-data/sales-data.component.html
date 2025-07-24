@@ -98,13 +98,13 @@
   <!-- Data Table -->
   <div *ngIf="showDataSection$ | async" class="data-section">
     <div class="table-header">
-      <h3>Sales Records ({{ formatNumber((totalRecords$ | async) || 0) }} total)</h3>
+      <h3>Sales Records ({{ formatNumber((tableInfo$ | async)?.totalRecords || 0) }} total)</h3>
       <div class="table-info">
         <div>
-          Showing {{ formatNumber((salesRecords$ | async)?.length || 0) }} of {{ formatNumber((totalRecords$ | async) || 0) }} records
+          Showing {{ formatNumber((tableInfo$ | async)?.recordsCount || 0) }} of {{ formatNumber((tableInfo$ | async)?.totalRecords || 0) }} records
         </div>
         <div class="memory-info">
-          Memory: {{ formatNumber((salesRecords$ | async)?.length || 0) }}/{{ formatNumber((maxStoredRecords$ | async) || 200) }} records cached
+          Memory: {{ formatNumber((tableInfo$ | async)?.recordsCount || 0) }}/{{ formatNumber((tableInfo$ | async)?.maxStored || 200) }} records cached
         </div>
       </div>
     </div>

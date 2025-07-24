@@ -82,6 +82,19 @@ export class SalesDataComponent implements OnInit, OnDestroy {
     )
   );
 
+  // Computed observables for table header to reduce async pipes
+  tableInfo$ = combineLatest([
+    this.salesRecords$,
+    this.totalRecords$,
+    this.maxStoredRecords$,
+  ]).pipe(
+    map(([records, total, maxStored]) => ({
+      recordsCount: records?.length || 0,
+      totalRecords: total || 0,
+      maxStored: maxStored || 200,
+    }))
+  );
+
   // Local filter state
   filters: SalesQuery = {};
 
@@ -94,6 +107,8 @@ export class SalesDataComponent implements OnInit, OnDestroy {
   private scrollTriggered = false;
   private scrollContainer: HTMLElement | null = null;
   private previousScrollHeight = 0;
+  private scrollTimeout: any = null;
+  private lastScrollTime = 0;
 
   // Make Math available in template
   protected Math = Math;
@@ -105,12 +120,32 @@ export class SalesDataComponent implements OnInit, OnDestroy {
 
   // Improved infinite scrolling with debouncing and state management
   onScroll(event: any) {
+    const now = Date.now();
     const element = event.target;
+
+    // Debounce scroll events to prevent excessive calls
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
+
+    // Only process scroll events that are at least 100ms apart
+    if (now - this.lastScrollTime < 100) {
+      this.scrollTimeout = setTimeout(() => {
+        this.processScroll(element);
+      }, 100);
+      return;
+    }
+
+    this.lastScrollTime = now;
+    this.processScroll(element);
+  }
+
+  private processScroll(element: HTMLElement) {
     this.scrollContainer = element;
 
-    // Check if we're near the bottom (50px threshold instead of 100px)
+    // Check if we're near the bottom (100px threshold for better performance)
     const atBottom =
-      element.scrollHeight - element.scrollTop <= element.clientHeight + 50;
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 100;
 
     if (
       atBottom &&
@@ -122,10 +157,10 @@ export class SalesDataComponent implements OnInit, OnDestroy {
       this.previousScrollHeight = element.scrollHeight;
       this.loadMoreRecords();
 
-      // Reset the flag after a short delay to prevent multiple triggers
+      // Reset the flag after a longer delay to prevent multiple triggers
       setTimeout(() => {
         this.scrollTriggered = false;
-      }, 500);
+      }, 1000);
     }
   }
 
@@ -163,14 +198,15 @@ export class SalesDataComponent implements OnInit, OnDestroy {
       this.isLoadingMore = loading;
       // If loading finished and we have a scroll container, preserve scroll position
       if (!loading && this.scrollContainer && this.previousScrollHeight > 0) {
-        setTimeout(() => {
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
           if (this.scrollContainer) {
             const newScrollHeight = this.scrollContainer.scrollHeight;
             const scrollDiff = newScrollHeight - this.previousScrollHeight;
             this.scrollContainer.scrollTop += scrollDiff;
             this.previousScrollHeight = 0;
           }
-        }, 0);
+        });
       }
     });
     this.hasMoreRecords$
@@ -179,6 +215,11 @@ export class SalesDataComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    // Clear any pending timeouts
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
+
     this.destroy$.next();
     this.destroy$.complete();
   }

@@ -1,0 +1,174 @@
+<div class="analytics-container">
+  <!-- Navigation Header -->
+  <div class="nav-header">
+    <button class="btn btn-secondary back-btn" (click)="goBack()">
+      ← Back to Dashboard
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Sales Analytics</h1>
+    <p>Comprehensive insights into sales performance and trends</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage$ | async" class="error-message">
+    {{ errorMessage$ | async }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading$ | async" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading analytics data...</p>
+  </div>
+
+  <!-- Analytics Dashboard -->
+  <div *ngIf="(isLoading$ | async) === false" class="analytics-dashboard">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="card-icon">📊</div>
+        <div class="card-content">
+          <h3>Total Records</h3>
+          <p>{{ formatNumber((totalRecords$ | async) || 0) }}</p>
+        </div>
+      </div>
+              <div class="summary-card">
+          <div class="card-icon">💰</div>
+          <div class="card-content">
+            <h3>Total Revenue</h3>
+            <p>{{ formatCurrency((totalRevenue$ | async) ?? 0) }}</p>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">📦</div>
+          <div class="card-content">
+            <h3>Total Units Sold</h3>
+            <p>{{ formatNumber((totalUnitsSold$ | async) ?? 0) }}</p>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">📈</div>
+          <div class="card-content">
+            <h3>Total Profit</h3>
+            <p>{{ formatCurrency((totalProfit$ | async) ?? 0) }}</p>
+          </div>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+      <!-- Revenue by Region Pie Chart -->
+      <div class="chart-card">
+        <h3>Revenue by Region</h3>
+        <ngx-charts-pie-chart
+          [results]="regionData$ | async"
+          [gradient]="gradient"
+          [legend]="showLegend"
+          [labels]="true"
+          [doughnut]="false"
+          [scheme]="colorScheme"
+          [tooltipDisabled]="false"
+          [animations]="true">
+        </ngx-charts-pie-chart>
+      </div>
+
+      <!-- Units Sold by Item Type Bar Chart -->
+      <div class="chart-card">
+        <h3>Units Sold by Item Type</h3>
+        <ngx-charts-bar-vertical
+          [results]="itemTypeData$ | async"
+          [gradient]="gradient"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [legend]="showLegend"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="'Item Type'"
+          [yAxisLabel]="'Units Sold'"
+          [scheme]="colorScheme"
+          [animations]="true">
+        </ngx-charts-bar-vertical>
+      </div>
+
+      <!-- Sales Channel Distribution -->
+      <div class="chart-card">
+        <h3>Sales Channel Distribution</h3>
+        <ngx-charts-pie-chart
+          [results]="salesChannelData$ | async"
+          [gradient]="gradient"
+          [legend]="showLegend"
+          [labels]="true"
+          [doughnut]="true"
+          [scheme]="colorScheme"
+          [tooltipDisabled]="false"
+          [animations]="true">
+        </ngx-charts-pie-chart>
+      </div>
+
+      <!-- Monthly Revenue Trend -->
+      <div class="chart-card">
+        <h3>Monthly Revenue Trend</h3>
+        <ngx-charts-line-chart
+          [results]="monthlyRevenueData$ | async"
+          [gradient]="gradient"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [legend]="showLegend"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="'Month'"
+          [yAxisLabel]="'Revenue ($)'"
+          [scheme]="colorScheme"
+          [animations]="true">
+        </ngx-charts-line-chart>
+      </div>
+
+      <!-- Profit by Region -->
+      <div class="chart-card">
+        <h3>Profit by Region</h3>
+        <ngx-charts-bar-horizontal
+          [results]="profitByRegionData$ | async"
+          [gradient]="gradient"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [legend]="showLegend"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="'Profit ($)'"
+          [yAxisLabel]="'Region'"
+          [scheme]="colorScheme"
+          [animations]="true">
+        </ngx-charts-bar-horizontal>
+      </div>
+
+      <!-- Data Table Summary -->
+      <div class="chart-card full-width">
+        <h3>Top Performing Regions</h3>
+        <div class="table-container">
+          <table class="analytics-table">
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Revenue</th>
+                <th>Profit</th>
+                <th>Units Sold</th>
+                <th>Profit Margin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let region of (regionData$ | async)?.slice(0, 5)">
+                <td>{{ region.name }}</td>
+                <td>{{ formatCurrency(region.value) }}</td>
+                <td>{{ formatCurrency(region.value * 0.3) }}</td>
+                <td>{{ formatNumber(region.value / 1000) }}</td>
+                <td>{{ 30.0 | number:'1.1-1' }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 
