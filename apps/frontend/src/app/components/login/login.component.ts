@@ -1,8 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { AuthService } from '../../services/auth.service';
+import * as AuthActions from '../../store/auth/auth.actions';
+import {
+  selectAuthLoading,
+  selectAuthError,
+} from '../../store/auth/auth.selectors';
 
 @Component({
   selector: 'app-login',
@@ -11,47 +16,32 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginData = {
     username: '',
     password: '',
   };
-  isLoading = false;
-  errorMessage = '';
-
-  private router = inject(Router);
+  private store = inject(Store);
   private authService = inject(AuthService);
+
+  isLoading$ = this.store.select(selectAuthLoading);
+  errorMessage$ = this.store.select(selectAuthError);
+
+  ngOnInit() {
+    // Load user from storage on component init
+    this.store.dispatch(AuthActions.loadUserFromStorage());
+  }
 
   onSubmit() {
     if (!this.loginData.username || !this.loginData.password) {
-      this.errorMessage = 'Please enter both username and password';
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    this.authService.login(this.loginData).subscribe({
-      next: () => {
-        this.router.navigate(['/home']);
-      },
-      error: (error) => {
-        console.error('Login error:', error);
-        if (error.status === 401) {
-          this.errorMessage = 'Invalid username or password';
-        } else if (error.status === 0) {
-          this.errorMessage =
-            'Cannot connect to server. Please check if backend is running.';
-        } else {
-          this.errorMessage = `Login failed: ${
-            error.statusText || 'Unknown error'
-          }`;
-        }
-        this.isLoading = false;
-      },
-      complete: () => {
-        this.isLoading = false;
-      },
-    });
+    this.store.dispatch(
+      AuthActions.login({
+        username: this.loginData.username,
+        password: this.loginData.password,
+      })
+    );
   }
 }

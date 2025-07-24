@@ -6,7 +6,7 @@
         <h1>Sales Dashboard</h1>
       </div>
       <div class="user-menu">
-        <span class="welcome-text">Welcome, {{ user?.name || user?.username || 'User' }}</span>
+        <span class="welcome-text">Welcome, {{ (user$ | async)?.name || (user$ | async)?.username || 'User' }}</span>
         <button class="logout-button" (click)="logout()">
           Logout
         </button>
@@ -18,20 +18,20 @@
   <main class="dashboard-main">
     <div class="container">
       <!-- Loading State -->
-      <div *ngIf="isLoading" class="loading-container">
+      <div *ngIf="isLoading$ | async" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Loading dashboard data...</p>
       </div>
 
       <!-- Dashboard Content -->
-      <div *ngIf="!isLoading" class="dashboard-content">
+      <div *ngIf="!(isLoading$ | async)" class="dashboard-content">
         <!-- Stats Cards -->
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon">📊</div>
             <div class="stat-content">
               <h3>Total Records</h3>
-              <p class="stat-value">{{ formatNumber(salesSummary?.totalRecords || 0) }}</p>
+              <p class="stat-value">{{ formatNumber((salesSummary$ | async)?.totalRecords || 0) }}</p>
             </div>
           </div>
 
@@ -39,7 +39,7 @@
             <div class="stat-icon">💰</div>
             <div class="stat-content">
               <h3>Total Revenue</h3>
-              <p class="stat-value">{{ formatCurrency(salesSummary?.totalRevenue || 0) }}</p>
+              <p class="stat-value">{{ formatCurrency((salesSummary$ | async)?.totalRevenue || 0) }}</p>
             </div>
           </div>
 
@@ -47,7 +47,7 @@
             <div class="stat-icon">📈</div>
             <div class="stat-content">
               <h3>Total Profit</h3>
-              <p class="stat-value">{{ formatCurrency(salesSummary?.totalProfit || 0) }}</p>
+              <p class="stat-value">{{ formatCurrency((salesSummary$ | async)?.totalProfit || 0) }}</p>
             </div>
           </div>
 
@@ -55,7 +55,7 @@
             <div class="stat-icon">🌍</div>
             <div class="stat-content">
               <h3>Regions</h3>
-              <p class="stat-value">{{ salesSummary?.regions?.length || 0 }}</p>
+              <p class="stat-value">{{ (salesSummary$ | async)?.regions?.length || 0 }}</p>
             </div>
           </div>
         </div>

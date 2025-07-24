@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ export interface User {
   username: string;
   email?: string;
   name?: string;
+  role?: string;
 }
 
 export interface LoginResponse {
@@ -28,7 +29,10 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
+  private http = inject(HttpClient);
+  private router = inject(Router);
+
+  constructor() {
     this.loadStoredUser();
   }
 

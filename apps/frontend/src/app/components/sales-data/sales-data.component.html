@@ -1,0 +1,191 @@
+<div class="sales-data-container">
+  <!-- Navigation Header -->
+  <div class="nav-header">
+    <button class="btn btn-secondary back-btn" (click)="goBack()">
+      ← Back to Dashboard
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Sales Data</h1>
+    <p>View and filter sales records</p>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="region">Region</label>
+        <select id="region" [(ngModel)]="filters.region" (change)="applyFilters()">
+          <option value="">All Regions</option>
+          <option *ngFor="let region of availableRegions$ | async" [value]="region">
+            {{ region }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="country">Country</label>
+        <select id="country" [(ngModel)]="filters.country" (change)="applyFilters()">
+          <option value="">All Countries</option>
+          <option *ngFor="let country of availableCountries$ | async" [value]="country">
+            {{ country }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="itemType">Item Type</label>
+        <select id="itemType" [(ngModel)]="filters.itemType" (change)="applyFilters()">
+          <option value="">All Item Types</option>
+          <option *ngFor="let itemType of availableItemTypes$ | async" [value]="itemType">
+            {{ itemType }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="salesChannel">Sales Channel</label>
+        <select id="salesChannel" [(ngModel)]="filters.salesChannel" (change)="applyFilters()">
+          <option value="">All Channels</option>
+          <option *ngFor="let channel of availableSalesChannels$ | async" [value]="channel">
+            {{ channel }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="orderPriority">Order Priority</label>
+        <select id="orderPriority" [(ngModel)]="filters.orderPriority" (change)="applyFilters()">
+          <option value="">All Priorities</option>
+          <option value="H">High</option>
+          <option value="M">Medium</option>
+          <option value="L">Low</option>
+          <option value="C">Critical</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate" [(ngModel)]="filters.startDate" (change)="applyFilters()">
+      </div>
+
+      <div class="filter-group">
+        <label for="endDate">End Date</label>
+        <input type="date" id="endDate" [(ngModel)]="filters.endDate" (change)="applyFilters()">
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn btn-secondary" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage$ | async" class="error-message">
+    {{ errorMessage$ | async }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading$ | async" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading sales data...</p>
+  </div>
+
+  <!-- Data Table -->
+  <div *ngIf="!(isLoading$ | async) && (salesRecords$ | async) && (salesRecords$ | async)!.length > 0" class="data-section">
+    <div class="table-header">
+      <h3>Sales Records ({{ formatNumber((totalRecords$ | async) || 0) }} total)</h3>
+      <div class="table-info">
+        Showing {{ formatNumber(getStartRecord()) }} - 
+        {{ formatNumber(getEndRecord()) }} 
+        of {{ formatNumber((totalRecords$ | async) || 0) }} records
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Order Date</th>
+            <th>Region</th>
+            <th>Country</th>
+            <th>Item Type</th>
+            <th>Sales Channel</th>
+            <th>Order Priority</th>
+            <th>Units Sold</th>
+            <th>Unit Price</th>
+            <th>Total Revenue</th>
+            <th>Total Cost</th>
+            <th>Total Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of salesRecords$ | async">
+            <td>{{ record.orderId }}</td>
+            <td>{{ formatDate(record.orderDate) }}</td>
+            <td>{{ record.region }}</td>
+            <td>{{ record.country }}</td>
+            <td>{{ record.itemType }}</td>
+            <td>{{ record.salesChannel }}</td>
+            <td>
+              <span class="priority-badge priority-{{ record.orderPriority.toLowerCase() }}">
+                {{ record.orderPriority }}
+              </span>
+            </td>
+            <td>{{ formatNumber(record.unitsSold) }}</td>
+            <td>{{ formatCurrency(record.unitPrice) }}</td>
+            <td>{{ formatCurrency(record.totalRevenue) }}</td>
+            <td>{{ formatCurrency(record.totalCost) }}</td>
+            <td>
+              <span [class]="record.totalProfit >= 0 ? 'profit-positive' : 'profit-negative'">
+                {{ formatCurrency(record.totalProfit) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="(totalRecords$ | async) && (pageSize$ | async) && ((totalRecords$ | async) || 0) / ((pageSize$ | async) || 10) > 1" class="pagination">
+      <button 
+        class="btn btn-secondary" 
+        [disabled]="isFirstPage()"
+        (click)="onPageChange(getPreviousPage())">
+        Previous
+      </button>
+
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of getPageNumbers()"
+          class="btn page-btn"
+          [class.active]="page === (currentPage$ | async)"
+          (click)="onPageChange(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button 
+        class="btn btn-secondary" 
+        [disabled]="isLastPage()"
+        (click)="onPageChange(getNextPage())">
+        Next
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!(isLoading$ | async) && (salesRecords$ | async)?.length === 0" class="empty-state">
+    <div class="empty-icon">📊</div>
+    <h3>No sales data found</h3>
+    <p>Try adjusting your filters or check back later.</p>
+    <button class="btn btn-primary" (click)="clearFilters()">
+      Clear Filters
+    </button>
+  </div>
+</div> 

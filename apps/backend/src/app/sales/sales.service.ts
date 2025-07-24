@@ -25,20 +25,20 @@ export class SalesService {
           .on('data', (data: any) => {
             // Convert numeric fields
             const record: SalesRecordDto = {
-              region: data.Region,
-              country: data.Country,
-              itemType: data['Item Type'],
-              salesChannel: data['Sales Channel'],
-              orderPriority: data['Order Priority'],
-              orderDate: data['Order Date'],
-              orderId: data['Order ID'],
-              shipDate: data['Ship Date'],
-              unitsSold: parseInt(data['Units Sold'], 10),
-              unitPrice: parseFloat(data['Unit Price']),
-              unitCost: parseFloat(data['Unit Cost']),
-              totalRevenue: parseFloat(data['Total Revenue']),
-              totalCost: parseFloat(data['Total Cost']),
-              totalProfit: parseFloat(data['Total Profit']),
+              region: data.region,
+              country: data.country,
+              itemType: data.itemType,
+              salesChannel: data.salesChannel,
+              orderPriority: data.orderPriority,
+              orderDate: data.orderDate,
+              orderId: data.orderId,
+              shipDate: data.shipDate,
+              unitsSold: parseInt(data.unitsSold, 10),
+              unitPrice: parseFloat(data.unitPrice),
+              unitCost: parseFloat(data.unitCost),
+              totalRevenue: parseFloat(data.totalRevenue),
+              totalCost: parseFloat(data.totalCost),
+              totalProfit: parseFloat(data.totalProfit),
             };
             results.push(record);
           })
@@ -74,26 +74,26 @@ export class SalesService {
     // Apply filters
     if (query.region) {
       filteredData = filteredData.filter((record) =>
-        record.region.toLowerCase().includes(query.region.toLowerCase())
+        record.region?.toLowerCase().includes(query.region.toLowerCase())
       );
     }
 
     if (query.country) {
       filteredData = filteredData.filter((record) =>
-        record.country.toLowerCase().includes(query.country.toLowerCase())
+        record.country?.toLowerCase().includes(query.country.toLowerCase())
       );
     }
 
     if (query.itemType) {
       filteredData = filteredData.filter((record) =>
-        record.itemType.toLowerCase().includes(query.itemType.toLowerCase())
+        record.itemType?.toLowerCase().includes(query.itemType.toLowerCase())
       );
     }
 
     if (query.salesChannel) {
       filteredData = filteredData.filter((record) =>
         record.salesChannel
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(query.salesChannel.toLowerCase())
       );
     }
@@ -101,7 +101,7 @@ export class SalesService {
     if (query.orderPriority) {
       filteredData = filteredData.filter(
         (record) =>
-          record.orderPriority.toLowerCase() ===
+          record.orderPriority?.toLowerCase() ===
           query.orderPriority.toLowerCase()
       );
     }
@@ -160,15 +160,23 @@ export class SalesService {
       0
     );
 
-    const regions = [...new Set(this.salesData.map((record) => record.region))];
+    const regions = [
+      ...new Set(this.salesData.map((record) => record.region).filter(Boolean)),
+    ];
     const countries = [
-      ...new Set(this.salesData.map((record) => record.country)),
+      ...new Set(
+        this.salesData.map((record) => record.country).filter(Boolean)
+      ),
     ];
     const itemTypes = [
-      ...new Set(this.salesData.map((record) => record.itemType)),
+      ...new Set(
+        this.salesData.map((record) => record.itemType).filter(Boolean)
+      ),
     ];
     const salesChannels = [
-      ...new Set(this.salesData.map((record) => record.salesChannel)),
+      ...new Set(
+        this.salesData.map((record) => record.salesChannel).filter(Boolean)
+      ),
     ];
 
     return {

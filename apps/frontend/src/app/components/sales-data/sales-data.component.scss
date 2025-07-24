@@ -1,0 +1,381 @@
+.sales-data-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Navigation Header
+.nav-header {
+  margin-bottom: 20px;
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+}
+
+// Header
+.header {
+  margin-bottom: 30px;
+  text-align: center;
+
+  h1 {
+    color: #1e293b;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+// Filters Section
+.filters-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .filter-group {
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #374151;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+      }
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+// Error Message
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #fecaca;
+  font-size: 14px;
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 16px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Data Section
+.data-section {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+
+  .table-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+
+    h3 {
+      color: #1e293b;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+    }
+
+    .table-info {
+      color: #64748b;
+      font-size: 14px;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .sales-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #374151;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td {
+      color: #1e293b;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: #f8fafc;
+      }
+    }
+  }
+}
+
+// Priority Badges
+.priority-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  &.priority-h {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  &.priority-m {
+    background: #fffbeb;
+    color: #d97706;
+  }
+
+  &.priority-l {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  &.priority-c {
+    background: #fef3c7;
+    color: #92400e;
+  }
+}
+
+// Profit/Loss Styling
+.profit-positive {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.profit-negative {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+// Pagination
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+
+  .page-numbers {
+    display: flex;
+    gap: 4px;
+  }
+
+  .page-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 8px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+
+    &.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: #1e293b;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 16px;
+    margin: 0 0 24px 0;
+  }
+}
+
+// Buttons
+.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background: #3b82f6;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #2563eb;
+    }
+  }
+
+  &.btn-secondary {
+    background: white;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+
+    &:hover:not(:disabled) {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .sales-data-container {
+    padding: 16px;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-table {
+    font-size: 12px;
+
+    th, td {
+      padding: 8px 12px;
+    }
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .page-numbers {
+    order: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .filters-section {
+    padding: 16px;
+  }
+
+  .data-section .table-header {
+    padding: 16px;
+  }
+} 

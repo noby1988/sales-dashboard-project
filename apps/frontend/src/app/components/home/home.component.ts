@@ -1,13 +1,15 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService, User } from '../../services/auth.service';
-
-interface SalesSummary {
-  totalRecords: number;
-  totalRevenue: number;
-  totalProfit: number;
-  regions: string[];
-}
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AuthService } from '../../services/auth.service';
+import * as AuthActions from '../../store/auth/auth.actions';
+import * as SalesActions from '../../store/sales/sales.actions';
+import {
+  selectUser,
+  selectSalesSummary,
+  selectLoadingSummary,
+} from '../../store';
 
 @Component({
   selector: 'app-home',
@@ -17,36 +19,20 @@ interface SalesSummary {
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-  user: User | null = null;
-  salesSummary: SalesSummary | null = null;
-  isLoading = true;
-
+  private store = inject(Store);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
-  ngOnInit() {
-    this.loadUserInfo();
-    this.loadSalesSummary();
-  }
+  user$ = this.store.select(selectUser);
+  salesSummary$ = this.store.select(selectSalesSummary);
+  isLoading$ = this.store.select(selectLoadingSummary);
 
-  private loadUserInfo() {
-    this.user = this.authService.getCurrentUser();
-  }
-
-  private async loadSalesSummary() {
-    try {
-      const response = await fetch('http://localhost:3000/api/sales/summary');
-      if (response.ok) {
-        this.salesSummary = await response.json();
-      }
-    } catch (error) {
-      console.error('Error loading sales summary:', error);
-    } finally {
-      this.isLoading = false;
-    }
+  public ngOnInit() {
+    this.store.dispatch(SalesActions.loadSalesSummary());
   }
 
   logout() {
-    this.authService.logout();
+    this.store.dispatch(AuthActions.logout());
   }
 
   formatCurrency(amount: number): string {
@@ -63,8 +49,7 @@ export class HomeComponent implements OnInit {
   }
 
   viewSalesData() {
-    // TODO: Navigate to sales data page
-    console.log('Navigate to sales data page');
+    this.router.navigate(['/sales']);
   }
 
   viewAnalytics() {

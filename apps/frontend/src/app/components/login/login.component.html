@@ -15,7 +15,7 @@
           [(ngModel)]="loginData.username"
           placeholder="Enter your username"
           required
-          [disabled]="isLoading"
+          [disabled]="(isLoading$ | async) ?? false"
         />
       </div>
 
@@ -28,21 +28,21 @@
           [(ngModel)]="loginData.password"
           placeholder="Enter your password"
           required
-          [disabled]="isLoading"
+          [disabled]="(isLoading$ | async) ?? false"
         />
       </div>
 
-      <div class="error-message" *ngIf="errorMessage">
-        {{ errorMessage }}
+      <div class="error-message" *ngIf="errorMessage$ | async">
+        {{ errorMessage$ | async }}
       </div>
 
       <button
         type="submit"
         class="login-button"
-        [disabled]="isLoading"
+        [disabled]="isLoading$ | async"
       >
-        <span *ngIf="!isLoading">Sign In</span>
-        <span *ngIf="isLoading">Signing In...</span>
+        <span *ngIf="!(isLoading$ | async)">Sign In</span>
+        <span *ngIf="isLoading$ | async">Signing In...</span>
       </button>
     </form>
 
