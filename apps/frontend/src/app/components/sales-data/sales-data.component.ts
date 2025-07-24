@@ -8,6 +8,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { map } from 'rxjs/operators';
+import { combineLatest } from 'rxjs';
 import { SalesQuery, SalesRecord } from '../../services/sales.service';
 import * as SalesActions from '../../store/sales/sales.actions';
 import {
@@ -54,6 +56,27 @@ export class SalesDataComponent implements OnInit {
   availableItemTypes$ = this.store.select(selectAvailableItemTypes);
   availableSalesChannels$ = this.store.select(selectAvailableSalesChannels);
   filters$ = this.store.select(selectFilters);
+
+  // Computed observables for cleaner templates
+  isNotLoading$ = this.isLoading$.pipe(map((loading) => !loading));
+  hasNoMoreRecords$ = this.hasMoreRecords$.pipe(map((hasMore) => !hasMore));
+  hasRecords$ = this.salesRecords$.pipe(
+    map((records) => records && records.length > 0)
+  );
+  hasNoRecords$ = this.salesRecords$.pipe(
+    map((records) => !records || records.length === 0)
+  );
+  showDataSection$ = combineLatest([this.isLoading$, this.salesRecords$]).pipe(
+    map(
+      ([loading, records]) => loading !== false && records && records.length > 0
+    )
+  );
+  showEmptyState$ = combineLatest([this.isLoading$, this.salesRecords$]).pipe(
+    map(
+      ([loading, records]) =>
+        loading === false && (!records || records.length === 0)
+    )
+  );
 
   // Local filter state
   filters: SalesQuery = {};

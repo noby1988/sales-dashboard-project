@@ -96,7 +96,7 @@
   </div>
 
   <!-- Data Table -->
-  <div *ngIf="!(isLoading$ | async) && (salesRecords$ | async) && (salesRecords$ | async)!.length > 0" class="data-section">
+  <div *ngIf="showDataSection$ | async" class="data-section">
     <div class="table-header">
       <h3>Sales Records ({{ formatNumber((totalRecords$ | async) || 0) }} total)</h3>
       <div class="table-info">
@@ -162,13 +162,13 @@
     </div>
 
     <!-- End of Records Indicator -->
-    <div *ngIf="!(hasMoreRecords$ | async)" class="end-of-records">
+    <div *ngIf="hasNoMoreRecords$ | async" class="end-of-records">
       <p>No more records to load</p>
     </div>
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!(isLoading$ | async) && (salesRecords$ | async)?.length === 0" class="empty-state">
+  <div *ngIf="showEmptyState$ | async" class="empty-state">
     <div class="empty-icon">📊</div>
     <h3>No sales data found</h3>
     <p>Try adjusting your filters or check back later.</p>
