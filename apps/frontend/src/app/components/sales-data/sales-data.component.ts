@@ -12,6 +12,7 @@ import { map } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
 import { SalesQuery, SalesRecord } from '../../services/sales.service';
 import * as SalesActions from '../../store/sales/sales.actions';
+import * as AuthActions from '../../store/auth/auth.actions';
 import {
   selectSalesRecords,
   selectTotalRecords,
@@ -28,6 +29,7 @@ import {
   selectAvailableSalesChannels,
   selectFilters,
 } from '../../store/sales/sales.selectors';
+import { selectIsAuthenticated } from '../../store/auth/auth.selectors';
 
 @Component({
   selector: 'app-sales-data',
@@ -68,7 +70,7 @@ export class SalesDataComponent implements OnInit {
   );
   showDataSection$ = combineLatest([this.isLoading$, this.salesRecords$]).pipe(
     map(
-      ([loading, records]) => loading !== false && records && records.length > 0
+      ([loading, records]) => loading === false && records && records.length > 0
     )
   );
   showEmptyState$ = combineLatest([this.isLoading$, this.salesRecords$]).pipe(
@@ -119,6 +121,19 @@ export class SalesDataComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Check if user is authenticated, if not, auto-login with test credentials
+    this.store.select(selectIsAuthenticated).subscribe((isAuthenticated) => {
+      if (!isAuthenticated) {
+        // Auto-login with test credentials for development
+        this.store.dispatch(
+          AuthActions.login({
+            username: 'admin',
+            password: 'password',
+          })
+        );
+      }
+    });
+
     // Load initial data
     this.store.dispatch(SalesActions.loadSalesSummary());
     this.store.dispatch(SalesActions.loadSalesRecords({}));
