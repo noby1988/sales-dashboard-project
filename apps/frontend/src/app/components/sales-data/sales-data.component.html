@@ -109,7 +109,7 @@
       </div>
     </div>
 
-    <!-- Simple Table Container with Infinite Scroll -->
+    <!-- Table Container with Infinite Scroll -->
     <div class="table-container" (scroll)="onScroll($event)">
       <table class="sales-table">
         <thead>
@@ -153,17 +153,17 @@
           </tr>
         </tbody>
       </table>
-    </div>
-
-    <!-- Loading More Indicator -->
-    <div *ngIf="isLoadingMore$ | async" class="loading-more">
-      <div class="loading-spinner"></div>
-      <p>Loading more records...</p>
-    </div>
-
-    <!-- End of Records Indicator -->
-    <div *ngIf="hasNoMoreRecords$ | async" class="end-of-records">
-      <p>No more records to load</p>
+      
+      <!-- Loading More Indicator - Always present but conditionally visible -->
+      <div class="loading-more" [class.visible]="isLoadingMore$ | async">
+        <div class="loading-spinner"></div>
+        <p>Loading more records...</p>
+      </div>
+      
+      <!-- End of Records Indicator - Always present but conditionally visible -->
+      <div class="end-of-records" [class.visible]="hasNoMoreRecords$ | async">
+        <p>No more records to load</p>
+      </div>
     </div>
   </div>
 

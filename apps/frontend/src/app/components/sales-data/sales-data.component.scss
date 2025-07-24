@@ -267,6 +267,12 @@
   padding: 20px;
   background: #f9fafb;
   border-top: 1px solid #e5e7eb;
+  display: none; // Hidden by default
+  transition: opacity 0.3s ease;
+
+  &.visible {
+    display: block; // Show when visible class is applied
+  }
 
   .loading-spinner {
     width: 24px;
@@ -290,6 +296,12 @@
   padding: 20px;
   background: #f9fafb;
   border-top: 1px solid #e5e7eb;
+  display: none; // Hidden by default
+  transition: opacity 0.3s ease;
+
+  &.visible {
+    display: block; // Show when visible class is applied
+  }
 
   p {
     color: #6b7280;

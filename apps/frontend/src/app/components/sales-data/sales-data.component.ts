@@ -3,13 +3,14 @@ import {
   inject,
   OnInit,
   ChangeDetectionStrategy,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { map } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
+import { map, debounceTime, takeUntil } from 'rxjs/operators';
+import { combineLatest, Subject } from 'rxjs';
 import { SalesQuery, SalesRecord } from '../../services/sales.service';
 import * as SalesActions from '../../store/sales/sales.actions';
 import * as AuthActions from '../../store/auth/auth.actions';
@@ -39,9 +40,10 @@ import { selectIsAuthenticated } from '../../store/auth/auth.selectors';
   styleUrls: ['./sales-data.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SalesDataComponent implements OnInit {
+export class SalesDataComponent implements OnInit, OnDestroy {
   private store = inject(Store);
   private router = inject(Router);
+  private destroy$ = new Subject<void>();
 
   // Observables from store
   salesRecords$ = this.store.select(selectSalesRecords);
@@ -87,6 +89,11 @@ export class SalesDataComponent implements OnInit {
   currentOffset = 0;
   pageSize = 20;
   maxStoredRecords = 200;
+  private isLoadingMore = false;
+  private hasMoreRecords = false;
+  private scrollTriggered = false;
+  private scrollContainer: HTMLElement | null = null;
+  private previousScrollHeight = 0;
 
   // Make Math available in template
   protected Math = Math;
@@ -96,28 +103,30 @@ export class SalesDataComponent implements OnInit {
     return record.orderId;
   }
 
-  // Simple infinite scrolling
+  // Improved infinite scrolling with debouncing and state management
   onScroll(event: any) {
     const element = event.target;
+    this.scrollContainer = element;
 
+    // Check if we're near the bottom (50px threshold instead of 100px)
     const atBottom =
-      element.scrollHeight - element.scrollTop <= element.clientHeight + 100; // 100px threshold
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 50;
 
-    if (atBottom && !this.isLoadingMore && this.hasMoreRecords) {
+    if (
+      atBottom &&
+      !this.scrollTriggered &&
+      !this.isLoadingMore &&
+      this.hasMoreRecords
+    ) {
+      this.scrollTriggered = true;
+      this.previousScrollHeight = element.scrollHeight;
       this.loadMoreRecords();
+
+      // Reset the flag after a short delay to prevent multiple triggers
+      setTimeout(() => {
+        this.scrollTriggered = false;
+      }, 500);
     }
-  }
-
-  private get isLoadingMore(): boolean {
-    let loading = false;
-    this.isLoadingMore$.subscribe((val) => (loading = val));
-    return loading;
-  }
-
-  private get hasMoreRecords(): boolean {
-    let hasMore = false;
-    this.hasMoreRecords$.subscribe((val) => (hasMore = val));
-    return hasMore;
   }
 
   ngOnInit() {
@@ -138,10 +147,40 @@ export class SalesDataComponent implements OnInit {
     this.store.dispatch(SalesActions.loadSalesSummary());
     this.store.dispatch(SalesActions.loadSalesRecords({}));
 
-    // Subscribe to observables to update local state
-    this.currentOffset$.subscribe((offset) => (this.currentOffset = offset));
-    this.pageSize$.subscribe((size) => (this.pageSize = size));
-    this.maxStoredRecords$.subscribe((max) => (this.maxStoredRecords = max));
+    // Subscribe to observables to update local state with proper cleanup
+    this.currentOffset$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((offset) => (this.currentOffset = offset));
+    this.pageSize$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((size) => (this.pageSize = size));
+    this.maxStoredRecords$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((max) => (this.maxStoredRecords = max));
+
+    // Subscribe to loading and hasMore states for infinite scroll
+    this.isLoadingMore$.pipe(takeUntil(this.destroy$)).subscribe((loading) => {
+      this.isLoadingMore = loading;
+      // If loading finished and we have a scroll container, preserve scroll position
+      if (!loading && this.scrollContainer && this.previousScrollHeight > 0) {
+        setTimeout(() => {
+          if (this.scrollContainer) {
+            const newScrollHeight = this.scrollContainer.scrollHeight;
+            const scrollDiff = newScrollHeight - this.previousScrollHeight;
+            this.scrollContainer.scrollTop += scrollDiff;
+            this.previousScrollHeight = 0;
+          }
+        }, 0);
+      }
+    });
+    this.hasMoreRecords$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((hasMore) => (this.hasMoreRecords = hasMore));
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   applyFilters() {
