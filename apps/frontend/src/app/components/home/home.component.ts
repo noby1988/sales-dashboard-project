@@ -1,6 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { AuthService, User } from '../../services/auth.service';
+
+interface SalesSummary {
+  totalRecords: number;
+  totalRevenue: number;
+  totalProfit: number;
+  regions: string[];
+}
 
 @Component({
   selector: 'app-home',
@@ -10,30 +17,19 @@ import { Router } from '@angular/router';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-  user: any = null;
-  salesSummary: any = null;
+  user: User | null = null;
+  salesSummary: SalesSummary | null = null;
   isLoading = true;
 
-  constructor(private router: Router) {}
+  private authService = inject(AuthService);
 
   ngOnInit() {
-    this.checkAuthentication();
     this.loadUserInfo();
     this.loadSalesSummary();
   }
 
-  private checkAuthentication() {
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (!isAuthenticated) {
-      this.router.navigate(['/login']);
-    }
-  }
-
   private loadUserInfo() {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      this.user = JSON.parse(userStr);
-    }
+    this.user = this.authService.getCurrentUser();
   }
 
   private async loadSalesSummary() {
@@ -50,9 +46,7 @@ export class HomeComponent implements OnInit {
   }
 
   logout() {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 
   formatCurrency(amount: number): string {

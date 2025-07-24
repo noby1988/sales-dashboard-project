@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -18,9 +19,10 @@ export class LoginComponent {
   isLoading = false;
   errorMessage = '';
 
-  router = inject(Router);
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
-  async onSubmit() {
+  onSubmit() {
     if (!this.loginData.username || !this.loginData.password) {
       this.errorMessage = 'Please enter both username and password';
       return;
@@ -29,29 +31,27 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    try {
-      // For now, we'll use a simple authentication
-      // In a real app, this would call your backend API
-      if (
-        this.loginData.username === 'admin' &&
-        this.loginData.password === 'password'
-      ) {
-        // Store authentication token/user info
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem(
-          'user',
-          JSON.stringify({ username: this.loginData.username })
-        );
-
-        // Navigate to home page
+    this.authService.login(this.loginData).subscribe({
+      next: () => {
         this.router.navigate(['/home']);
-      } else {
-        this.errorMessage = 'Invalid username or password';
-      }
-    } catch {
-      this.errorMessage = 'Login failed. Please try again.';
-    } finally {
-      this.isLoading = false;
-    }
+      },
+      error: (error) => {
+        console.error('Login error:', error);
+        if (error.status === 401) {
+          this.errorMessage = 'Invalid username or password';
+        } else if (error.status === 0) {
+          this.errorMessage =
+            'Cannot connect to server. Please check if backend is running.';
+        } else {
+          this.errorMessage = `Login failed: ${
+            error.statusText || 'Unknown error'
+          }`;
+        }
+        this.isLoading = false;
+      },
+      complete: () => {
+        this.isLoading = false;
+      },
+    });
   }
 }

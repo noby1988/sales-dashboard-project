@@ -1,12 +1,14 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { SalesQueryDto } from './dto/sales-record.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('sales')
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async getSalesRecords(
     @Query('region') region?: string,
     @Query('country') country?: string,
@@ -34,16 +36,19 @@ export class SalesController {
   }
 
   @Get('summary')
+  @UseGuards(JwtAuthGuard)
   async getSalesSummary() {
     return this.salesService.getSalesSummary();
   }
 
   @Get('by-region')
+  @UseGuards(JwtAuthGuard)
   async getSalesByRegion() {
     return this.salesService.getSalesByRegion();
   }
 
   @Get('by-item-type')
+  @UseGuards(JwtAuthGuard)
   async getSalesByItemType() {
     return this.salesService.getSalesByItemType();
   }

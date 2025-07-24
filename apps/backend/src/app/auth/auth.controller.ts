@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
 import { Request } from 'express';
 
 interface RequestWithUser extends Request {
-  user: any;
+  user: unknown;
 }
 
 @Controller('auth')
