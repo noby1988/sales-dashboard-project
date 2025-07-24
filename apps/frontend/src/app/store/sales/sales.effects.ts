@@ -54,6 +54,34 @@ export class SalesEffects {
     )
   );
 
+  // Jump To Offset Effect
+  jumpToOffset$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SalesActions.jumpToOffset),
+      mergeMap(({ offset, query }) => {
+        const jumpQuery = {
+          ...query,
+          offset: offset,
+          limit: 20, // Load 20 records from the new offset
+        };
+
+        return this.salesService.getSalesRecords(jumpQuery).pipe(
+          map((response) =>
+            SalesActions.loadSalesRecordsSuccess({
+              data: response.data,
+              total: response.total,
+              limit: response.limit,
+              offset: response.offset,
+            })
+          ),
+          catchError((error) =>
+            of(SalesActions.loadSalesRecordsFailure({ error }))
+          )
+        );
+      })
+    )
+  );
+
   // Load Sales Summary Effect
   loadSalesSummary$ = createEffect(() =>
     this.actions$.pipe(

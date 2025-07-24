@@ -35,6 +35,11 @@ export const selectHasMoreRecords = createSelector(
   (state) => state.hasMoreRecords
 );
 
+export const selectMaxStoredRecords = createSelector(
+  selectSalesState,
+  (state) => state.maxStoredRecords
+);
+
 export const selectLoadingRecords = createSelector(
   selectSalesState,
   (state) => state.loadingRecords
@@ -128,8 +133,6 @@ export const selectHasError = createSelector(
   (errorRecords, errorSummary, errorByRegion, errorByItemType) =>
     errorRecords || errorSummary || errorByRegion || errorByItemType
 );
-
-
 
 // Filter Options Selectors (from summary)
 export const selectAvailableRegions = createSelector(

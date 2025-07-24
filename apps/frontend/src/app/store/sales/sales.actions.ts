@@ -112,5 +112,16 @@ export const prefetchSalesRecordsSuccess = createAction(
   props<{ data: SalesRecord[]; offset: number; direction: 'next' | 'prev' }>()
 );
 
+// Virtual Scrolling Management
+export const cleanupOldRecords = createAction(
+  '[Sales] Cleanup Old Records',
+  props<{ currentOffset: number }>()
+);
+
+export const jumpToOffset = createAction(
+  '[Sales] Jump To Offset',
+  props<{ offset: number; query?: SalesQuery }>()
+);
+
 // Reset Sales State
 export const resetSalesState = createAction('[Sales] Reset State');

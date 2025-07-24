@@ -40,21 +40,47 @@ export const salesReducer = createReducer(
 
   on(
     SalesActions.loadMoreSalesRecordsSuccess,
-    (state, { data, total, limit, offset }) => ({
-      ...state,
-      records: [...state.records, ...data],
-      totalRecords: total,
-      currentOffset: offset,
-      loadingMoreRecords: false,
-      errorRecords: null,
-      hasMoreRecords: offset + limit < total,
-    })
+    (state, { data, total, limit, offset }) => {
+      const newRecords = [...state.records, ...data];
+
+      // Cleanup old records if we exceed maxStoredRecords
+      let cleanedRecords = newRecords;
+      if (newRecords.length > state.maxStoredRecords) {
+        // Keep the most recent records
+        const startIndex = newRecords.length - state.maxStoredRecords;
+        cleanedRecords = newRecords.slice(startIndex);
+      }
+
+      return {
+        ...state,
+        records: cleanedRecords,
+        totalRecords: total,
+        currentOffset: offset,
+        loadingMoreRecords: false,
+        errorRecords: null,
+        hasMoreRecords: offset + limit < total,
+      };
+    }
   ),
 
   on(SalesActions.loadMoreSalesRecordsFailure, (state, { error }) => ({
     ...state,
     loadingMoreRecords: false,
     errorRecords: error.message || 'Failed to load more sales records',
+  })),
+
+  // Disable cleanup to prevent scroll jumping
+  // on(SalesActions.cleanupOldRecords, (state, { currentOffset }) => {
+  //   // Cleanup logic disabled for now
+  //   return state;
+  // }),
+
+  on(SalesActions.jumpToOffset, (state, { offset }) => ({
+    ...state,
+    records: [], // Clear records when jumping to a new offset
+    currentOffset: offset,
+    loadingRecords: true,
+    errorRecords: null,
   })),
 
   // Load Sales Summary

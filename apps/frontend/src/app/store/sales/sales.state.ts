@@ -7,11 +7,12 @@ import {
 } from '../../services/sales.service';
 
 export interface SalesState {
-  // Sales Records with infinite scrolling
+  // Sales Records with virtual scrolling
   records: SalesRecord[];
   totalRecords: number;
   currentOffset: number;
   pageSize: number;
+  maxStoredRecords: number; // Maximum records to keep in memory (disabled for now)
   loadingRecords: boolean;
   loadingMoreRecords: boolean;
   errorRecords: string | null;
@@ -37,11 +38,12 @@ export interface SalesState {
 }
 
 export const initialState: SalesState = {
-  // Sales Records with infinite scrolling
+  // Sales Records with virtual scrolling
   records: [],
   totalRecords: 0,
   currentOffset: 0,
   pageSize: 20,
+  maxStoredRecords: 10000, // Increased to prevent cleanup during scrolling
   loadingRecords: false,
   loadingMoreRecords: false,
   errorRecords: null,

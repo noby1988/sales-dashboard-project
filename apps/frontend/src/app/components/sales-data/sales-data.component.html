@@ -100,10 +100,16 @@
     <div class="table-header">
       <h3>Sales Records ({{ formatNumber((totalRecords$ | async) || 0) }} total)</h3>
       <div class="table-info">
-        Showing {{ formatNumber((salesRecords$ | async)?.length || 0) }} of {{ formatNumber((totalRecords$ | async) || 0) }} records
+        <div>
+          Showing {{ formatNumber((salesRecords$ | async)?.length || 0) }} of {{ formatNumber((totalRecords$ | async) || 0) }} records
+        </div>
+        <div class="memory-info">
+          Memory: {{ formatNumber((salesRecords$ | async)?.length || 0) }}/{{ formatNumber((maxStoredRecords$ | async) || 200) }} records cached
+        </div>
       </div>
     </div>
 
+    <!-- Simple Table Container with Infinite Scroll -->
     <div class="table-container" (scroll)="onScroll($event)">
       <table class="sales-table">
         <thead>
@@ -123,7 +129,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let record of salesRecords$ | async">
+          <tr *ngFor="let record of salesRecords$ | async; trackBy: trackByRecordId; let i = index">
             <td>{{ record.orderId }}</td>
             <td>{{ formatDate(record.orderDate) }}</td>
             <td>{{ record.region }}</td>
@@ -147,17 +153,17 @@
           </tr>
         </tbody>
       </table>
+    </div>
 
-      <!-- Loading More Indicator -->
-      <div *ngIf="isLoadingMore$ | async" class="loading-more">
-        <div class="loading-spinner"></div>
-        <p>Loading more records...</p>
-      </div>
+    <!-- Loading More Indicator -->
+    <div *ngIf="isLoadingMore$ | async" class="loading-more">
+      <div class="loading-spinner"></div>
+      <p>Loading more records...</p>
+    </div>
 
-      <!-- End of Records Indicator -->
-      <div *ngIf="!(hasMoreRecords$ | async)" class="end-of-records">
-        <p>No more records to load</p>
-      </div>
+    <!-- End of Records Indicator -->
+    <div *ngIf="!(hasMoreRecords$ | async)" class="end-of-records">
+      <p>No more records to load</p>
     </div>
   </div>
 

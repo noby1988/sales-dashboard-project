@@ -1,9 +1,14 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { SalesQuery } from '../../services/sales.service';
+import { SalesQuery, SalesRecord } from '../../services/sales.service';
 import * as SalesActions from '../../store/sales/sales.actions';
 import {
   selectSalesRecords,
@@ -13,6 +18,7 @@ import {
   selectLoadingRecords,
   selectLoadingMoreRecords,
   selectHasMoreRecords,
+  selectMaxStoredRecords,
   selectErrorRecords,
   selectAvailableRegions,
   selectAvailableCountries,
@@ -27,6 +33,7 @@ import {
   imports: [CommonModule, FormsModule],
   templateUrl: './sales-data.component.html',
   styleUrls: ['./sales-data.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SalesDataComponent implements OnInit {
   private store = inject(Store);
@@ -37,6 +44,7 @@ export class SalesDataComponent implements OnInit {
   totalRecords$ = this.store.select(selectTotalRecords);
   currentOffset$ = this.store.select(selectCurrentOffset);
   pageSize$ = this.store.select(selectPageSize);
+  maxStoredRecords$ = this.store.select(selectMaxStoredRecords);
   isLoading$ = this.store.select(selectLoadingRecords);
   isLoadingMore$ = this.store.select(selectLoadingMoreRecords);
   hasMoreRecords$ = this.store.select(selectHasMoreRecords);
@@ -53,15 +61,23 @@ export class SalesDataComponent implements OnInit {
   // Local state for infinite scrolling
   currentOffset = 0;
   pageSize = 20;
+  maxStoredRecords = 200;
 
   // Make Math available in template
   protected Math = Math;
 
-  // Infinite scrolling methods
+  // TrackBy function to prevent unnecessary re-rendering
+  trackByRecordId(index: number, record: SalesRecord): string {
+    return record.orderId;
+  }
+
+  // Simple infinite scrolling
   onScroll(event: any) {
     const element = event.target;
-    const atBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 100; // 100px threshold
-    
+
+    const atBottom =
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 100; // 100px threshold
+
     if (atBottom && !this.isLoadingMore && this.hasMoreRecords) {
       this.loadMoreRecords();
     }
@@ -69,13 +85,13 @@ export class SalesDataComponent implements OnInit {
 
   private get isLoadingMore(): boolean {
     let loading = false;
-    this.isLoadingMore$.subscribe(val => loading = val);
+    this.isLoadingMore$.subscribe((val) => (loading = val));
     return loading;
   }
 
   private get hasMoreRecords(): boolean {
     let hasMore = false;
-    this.hasMoreRecords$.subscribe(val => hasMore = val);
+    this.hasMoreRecords$.subscribe((val) => (hasMore = val));
     return hasMore;
   }
 
@@ -85,8 +101,9 @@ export class SalesDataComponent implements OnInit {
     this.store.dispatch(SalesActions.loadSalesRecords({}));
 
     // Subscribe to observables to update local state
-    this.currentOffset$.subscribe(offset => this.currentOffset = offset);
-    this.pageSize$.subscribe(size => this.pageSize = size);
+    this.currentOffset$.subscribe((offset) => (this.currentOffset = offset));
+    this.pageSize$.subscribe((size) => (this.pageSize = size));
+    this.maxStoredRecords$.subscribe((max) => (this.maxStoredRecords = max));
   }
 
   applyFilters() {
@@ -129,6 +146,4 @@ export class SalesDataComponent implements OnInit {
   goBack() {
     this.router.navigate(['/home']);
   }
-
-
 }
