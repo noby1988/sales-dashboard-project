@@ -100,13 +100,11 @@
     <div class="table-header">
       <h3>Sales Records ({{ formatNumber((totalRecords$ | async) || 0) }} total)</h3>
       <div class="table-info">
-        Showing {{ formatNumber(getStartRecord()) }} - 
-        {{ formatNumber(getEndRecord()) }} 
-        of {{ formatNumber((totalRecords$ | async) || 0) }} records
+        Showing {{ formatNumber((salesRecords$ | async)?.length || 0) }} of {{ formatNumber((totalRecords$ | async) || 0) }} records
       </div>
     </div>
 
-    <div class="table-container">
+    <div class="table-container" (scroll)="onScroll($event)">
       <table class="sales-table">
         <thead>
           <tr>
@@ -149,33 +147,17 @@
           </tr>
         </tbody>
       </table>
-    </div>
 
-    <!-- Pagination -->
-    <div *ngIf="(totalRecords$ | async) && (pageSize$ | async) && ((totalRecords$ | async) || 0) / ((pageSize$ | async) || 10) > 1" class="pagination">
-      <button 
-        class="btn btn-secondary" 
-        [disabled]="isFirstPage()"
-        (click)="onPageChange(getPreviousPage())">
-        Previous
-      </button>
-
-      <div class="page-numbers">
-        <button 
-          *ngFor="let page of getPageNumbers()"
-          class="btn page-btn"
-          [class.active]="page === (currentPage$ | async)"
-          (click)="onPageChange(page)">
-          {{ page }}
-        </button>
+      <!-- Loading More Indicator -->
+      <div *ngIf="isLoadingMore$ | async" class="loading-more">
+        <div class="loading-spinner"></div>
+        <p>Loading more records...</p>
       </div>
 
-      <button 
-        class="btn btn-secondary" 
-        [disabled]="isLastPage()"
-        (click)="onPageChange(getNextPage())">
-        Next
-      </button>
+      <!-- End of Records Indicator -->
+      <div *ngIf="!(hasMoreRecords$ | async)" class="end-of-records">
+        <p>No more records to load</p>
+      </div>
     </div>
   </div>
 

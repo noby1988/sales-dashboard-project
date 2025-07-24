@@ -32,6 +32,28 @@ export class SalesEffects {
     )
   );
 
+  // Load More Sales Records Effect
+  loadMoreSalesRecords$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SalesActions.loadMoreSalesRecords),
+      mergeMap(({ query }) =>
+        this.salesService.getSalesRecords(query).pipe(
+          map((response) =>
+            SalesActions.loadMoreSalesRecordsSuccess({
+              data: response.data,
+              total: response.total,
+              limit: response.limit,
+              offset: response.offset,
+            })
+          ),
+          catchError((error) =>
+            of(SalesActions.loadMoreSalesRecordsFailure({ error }))
+          )
+        )
+      )
+    )
+  );
+
   // Load Sales Summary Effect
   loadSalesSummary$ = createEffect(() =>
     this.actions$.pipe(

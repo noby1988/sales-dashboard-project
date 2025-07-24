@@ -85,5 +85,32 @@ export const setFilters = createAction(
 // Clear Filters
 export const clearFilters = createAction('[Sales] Clear Filters');
 
+// Load More Sales Records (Infinite Scroll)
+export const loadMoreSalesRecords = createAction(
+  '[Sales] Load More Sales Records',
+  props<{ query?: SalesQuery }>()
+);
+
+export const loadMoreSalesRecordsSuccess = createAction(
+  '[Sales] Load More Sales Records Success',
+  props<{ data: SalesRecord[]; total: number; limit: number; offset: number }>()
+);
+
+export const loadMoreSalesRecordsFailure = createAction(
+  '[Sales] Load More Sales Records Failure',
+  props<{ error: any }>()
+);
+
+// Prefetch Sales Records
+export const prefetchSalesRecords = createAction(
+  '[Sales] Prefetch Sales Records',
+  props<{ query?: SalesQuery; direction: 'next' | 'prev' }>()
+);
+
+export const prefetchSalesRecordsSuccess = createAction(
+  '[Sales] Prefetch Sales Records Success',
+  props<{ data: SalesRecord[]; offset: number; direction: 'next' | 'prev' }>()
+);
+
 // Reset Sales State
 export const resetSalesState = createAction('[Sales] Reset State');

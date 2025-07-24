@@ -8,16 +8,17 @@ import * as SalesActions from '../../store/sales/sales.actions';
 import {
   selectSalesRecords,
   selectTotalRecords,
-  selectCurrentPage,
+  selectCurrentOffset,
   selectPageSize,
   selectLoadingRecords,
+  selectLoadingMoreRecords,
+  selectHasMoreRecords,
   selectErrorRecords,
   selectAvailableRegions,
   selectAvailableCountries,
   selectAvailableItemTypes,
   selectAvailableSalesChannels,
   selectFilters,
-  selectPaginationInfo,
 } from '../../store/sales/sales.selectors';
 
 @Component({
@@ -34,62 +35,58 @@ export class SalesDataComponent implements OnInit {
   // Observables from store
   salesRecords$ = this.store.select(selectSalesRecords);
   totalRecords$ = this.store.select(selectTotalRecords);
-  currentPage$ = this.store.select(selectCurrentPage);
+  currentOffset$ = this.store.select(selectCurrentOffset);
   pageSize$ = this.store.select(selectPageSize);
   isLoading$ = this.store.select(selectLoadingRecords);
+  isLoadingMore$ = this.store.select(selectLoadingMoreRecords);
+  hasMoreRecords$ = this.store.select(selectHasMoreRecords);
   errorMessage$ = this.store.select(selectErrorRecords);
   availableRegions$ = this.store.select(selectAvailableRegions);
   availableCountries$ = this.store.select(selectAvailableCountries);
   availableItemTypes$ = this.store.select(selectAvailableItemTypes);
   availableSalesChannels$ = this.store.select(selectAvailableSalesChannels);
   filters$ = this.store.select(selectFilters);
-  paginationInfo$ = this.store.select(selectPaginationInfo);
 
   // Local filter state
   filters: SalesQuery = {};
 
+  // Local state for infinite scrolling
+  currentOffset = 0;
+  pageSize = 20;
+
   // Make Math available in template
   protected Math = Math;
 
-  // Computed properties for template
-  get totalPages(): number {
-    let totalPages = 0;
-    this.totalRecords$.subscribe((total) => {
-      this.pageSize$.subscribe((size) => {
-        totalPages = Math.ceil(total / size);
-      });
-    });
-    return totalPages;
+  // Infinite scrolling methods
+  onScroll(event: any) {
+    const element = event.target;
+    const atBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 100; // 100px threshold
+    
+    if (atBottom && !this.isLoadingMore && this.hasMoreRecords) {
+      this.loadMoreRecords();
+    }
   }
 
-  get pages(): number[] {
-    const pages: number[] = [];
-    let totalPages = 0;
-    let currentPage = 1;
+  private get isLoadingMore(): boolean {
+    let loading = false;
+    this.isLoadingMore$.subscribe(val => loading = val);
+    return loading;
+  }
 
-    this.totalRecords$.subscribe((total) => {
-      this.pageSize$.subscribe((size) => {
-        totalPages = Math.ceil(total / size);
-      });
-    });
-
-    this.currentPage$.subscribe((page) => {
-      currentPage = page;
-    });
-
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(totalPages, currentPage + 2);
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
+  private get hasMoreRecords(): boolean {
+    let hasMore = false;
+    this.hasMoreRecords$.subscribe(val => hasMore = val);
+    return hasMore;
   }
 
   ngOnInit() {
     // Load initial data
     this.store.dispatch(SalesActions.loadSalesSummary());
     this.store.dispatch(SalesActions.loadSalesRecords({}));
+
+    // Subscribe to observables to update local state
+    this.currentOffset$.subscribe(offset => this.currentOffset = offset);
+    this.pageSize$.subscribe(size => this.pageSize = size);
   }
 
   applyFilters() {
@@ -101,8 +98,15 @@ export class SalesDataComponent implements OnInit {
     this.store.dispatch(SalesActions.clearFilters());
   }
 
-  onPageChange(page: number) {
-    this.store.dispatch(SalesActions.setCurrentPage({ page }));
+  loadMoreRecords() {
+    if (this.filters) {
+      const query = {
+        ...this.filters,
+        offset: this.currentOffset + this.pageSize,
+        limit: this.pageSize,
+      };
+      this.store.dispatch(SalesActions.loadMoreSalesRecords({ query }));
+    }
   }
 
   formatCurrency(amount: number): string {
@@ -126,79 +130,5 @@ export class SalesDataComponent implements OnInit {
     this.router.navigate(['/home']);
   }
 
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    let totalPages = 0;
-    let currentPage = 1;
 
-    this.totalRecords$.subscribe((total) => {
-      this.pageSize$.subscribe((size) => {
-        totalPages = Math.ceil(total / size);
-      });
-    });
-
-    this.currentPage$.subscribe((page) => {
-      currentPage = page;
-    });
-
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(totalPages, currentPage + 2);
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  getStartRecord(): number {
-    let currentPage = 1;
-    let pageSize = 10;
-
-    this.currentPage$.subscribe((page) => (currentPage = page));
-    this.pageSize$.subscribe((size) => (pageSize = size));
-
-    return (currentPage - 1) * pageSize + 1;
-  }
-
-  getEndRecord(): number {
-    let currentPage = 1;
-    let pageSize = 10;
-    let totalRecords = 0;
-
-    this.currentPage$.subscribe((page) => (currentPage = page));
-    this.pageSize$.subscribe((size) => (pageSize = size));
-    this.totalRecords$.subscribe((total) => (totalRecords = total));
-
-    return Math.min(currentPage * pageSize, totalRecords);
-  }
-
-  getPreviousPage(): number {
-    let currentPage = 1;
-    this.currentPage$.subscribe((page) => (currentPage = page));
-    return currentPage - 1;
-  }
-
-  getNextPage(): number {
-    let currentPage = 1;
-    this.currentPage$.subscribe((page) => (currentPage = page));
-    return currentPage + 1;
-  }
-
-  isFirstPage(): boolean {
-    let currentPage = 1;
-    this.currentPage$.subscribe((page) => (currentPage = page));
-    return currentPage === 1;
-  }
-
-  isLastPage(): boolean {
-    let currentPage = 1;
-    let totalRecords = 0;
-    let pageSize = 10;
-
-    this.currentPage$.subscribe((page) => (currentPage = page));
-    this.totalRecords$.subscribe((total) => (totalRecords = total));
-    this.pageSize$.subscribe((size) => (pageSize = size));
-
-    return currentPage === Math.ceil(totalRecords / pageSize);
-  }
 }

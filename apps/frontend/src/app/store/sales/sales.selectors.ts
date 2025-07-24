@@ -15,14 +15,24 @@ export const selectTotalRecords = createSelector(
   (state) => state.totalRecords
 );
 
-export const selectCurrentPage = createSelector(
+export const selectCurrentOffset = createSelector(
   selectSalesState,
-  (state) => state.currentPage
+  (state) => state.currentOffset
 );
 
 export const selectPageSize = createSelector(
   selectSalesState,
   (state) => state.pageSize
+);
+
+export const selectLoadingMoreRecords = createSelector(
+  selectSalesState,
+  (state) => state.loadingMoreRecords
+);
+
+export const selectHasMoreRecords = createSelector(
+  selectSalesState,
+  (state) => state.hasMoreRecords
 );
 
 export const selectLoadingRecords = createSelector(
@@ -119,20 +129,7 @@ export const selectHasError = createSelector(
     errorRecords || errorSummary || errorByRegion || errorByItemType
 );
 
-// Pagination Selectors
-export const selectPaginationInfo = createSelector(
-  selectCurrentPage,
-  selectPageSize,
-  selectTotalRecords,
-  (currentPage, pageSize, total) => ({
-    currentPage,
-    pageSize,
-    total,
-    startIndex: (currentPage - 1) * pageSize + 1,
-    endIndex: Math.min(currentPage * pageSize, total),
-    totalPages: Math.ceil(total / pageSize),
-  })
-);
+
 
 // Filter Options Selectors (from summary)
 export const selectAvailableRegions = createSelector(

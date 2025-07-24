@@ -19,9 +19,10 @@ export const salesReducer = createReducer(
       records: data,
       totalRecords: total,
       pageSize: limit,
-      currentPage: Math.floor(offset / limit) + 1,
+      currentOffset: offset,
       loadingRecords: false,
       errorRecords: null,
+      hasMoreRecords: offset + limit < total,
     })
   ),
 
@@ -29,6 +30,31 @@ export const salesReducer = createReducer(
     ...state,
     loadingRecords: false,
     errorRecords: error.message || 'Failed to load sales records',
+  })),
+
+  // Load More Sales Records
+  on(SalesActions.loadMoreSalesRecords, (state) => ({
+    ...state,
+    loadingMoreRecords: true,
+  })),
+
+  on(
+    SalesActions.loadMoreSalesRecordsSuccess,
+    (state, { data, total, limit, offset }) => ({
+      ...state,
+      records: [...state.records, ...data],
+      totalRecords: total,
+      currentOffset: offset,
+      loadingMoreRecords: false,
+      errorRecords: null,
+      hasMoreRecords: offset + limit < total,
+    })
+  ),
+
+  on(SalesActions.loadMoreSalesRecordsFailure, (state, { error }) => ({
+    ...state,
+    loadingMoreRecords: false,
+    errorRecords: error.message || 'Failed to load more sales records',
   })),
 
   // Load Sales Summary

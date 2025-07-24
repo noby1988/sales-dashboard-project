@@ -7,13 +7,15 @@ import {
 } from '../../services/sales.service';
 
 export interface SalesState {
-  // Sales Records
+  // Sales Records with infinite scrolling
   records: SalesRecord[];
   totalRecords: number;
-  currentPage: number;
+  currentOffset: number;
   pageSize: number;
   loadingRecords: boolean;
+  loadingMoreRecords: boolean;
   errorRecords: string | null;
+  hasMoreRecords: boolean;
 
   // Sales Summary
   summary: SalesSummary | null;
@@ -35,13 +37,15 @@ export interface SalesState {
 }
 
 export const initialState: SalesState = {
-  // Sales Records
+  // Sales Records with infinite scrolling
   records: [],
   totalRecords: 0,
-  currentPage: 1,
+  currentOffset: 0,
   pageSize: 20,
   loadingRecords: false,
+  loadingMoreRecords: false,
   errorRecords: null,
+  hasMoreRecords: true,
 
   // Sales Summary
   summary: null,

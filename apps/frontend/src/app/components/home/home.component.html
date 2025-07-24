@@ -24,7 +24,7 @@
       </div>
 
       <!-- Dashboard Content -->
-      <div *ngIf="!(isLoading$ | async)" class="dashboard-content">
+      <div *ngIf="(isLoading$ | async) === false" class="dashboard-content">
         <!-- Stats Cards -->
         <div class="stats-grid">
           <div class="stat-card">
